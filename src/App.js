@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import React, { useState } from "react";
+import Chat from "./Chat/Chat";
+import Login from "./Login/Login";
 
-function App() {
+const App = () => {
+  const [credentials, setCredentials] = useState({ server: "localhost:4000" });
+  const [chatEnabled, setChatEnabled] = useState(false);
+
+  const handleTextFieldOnChange = (e) => {
+    e.preventDefault();
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  const handleLoginOnSubmit = (e) => {
+    e.preventDefault();
+    const server = `http://${credentials.server}`;
+    setCredentials({ ...credentials, server });
+    setChatEnabled(true);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {chatEnabled ? (
+        <Chat server={credentials.server} />
+      ) : (
+        <Login
+          handleLoginOnSubmit={handleLoginOnSubmit}
+          handleTextFieldOnChange={handleTextFieldOnChange}
+          server={credentials.server}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default App;
