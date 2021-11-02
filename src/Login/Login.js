@@ -11,7 +11,7 @@ const Login = ({ handleTextFieldOnChange, handleLoginOnSubmit, server }) => {
           label="Server to connect"
           onChange={handleTextFieldOnChange}
         />
-        <Button type="submit">Connect!</Button>
+        <Button onClick={handleLoginOnSubmit} >Connect!</Button>
       </form>
     </div>
   );

@@ -19,7 +19,7 @@ const Chat = ({ server }) => {
         setChat({ ...chat, lastMessage: message.data });
       }
     });
-  }, []);
+  }, [server]);
 
   const handleTextAreaChange = (e) => {};
 
@@ -36,6 +36,7 @@ const Chat = ({ server }) => {
     <div>
       <Typography variant="h5"> {chat.lastMessage} </Typography>
       <TextField
+        name="chat"
         value={chat.messageToSend}
         variant="outlined"
         onChange={handleMessageToSendOnChange}
