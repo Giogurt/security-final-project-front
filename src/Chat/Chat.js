@@ -22,6 +22,7 @@ const Chat = ({
     myLastMessage: "",
     messageToSend: "",
     otherYValue: 0,
+    keyReceived: false,
     // cryptoKey: 0,
   });
   console.log(cryptoKey);
@@ -42,6 +43,10 @@ const Chat = ({
   }, [cryptoKey]);
 
   useEffect(() => {
+    listenSocket();
+  }, [socket]);
+
+  const listenSocket = () => {
     if (socket !== undefined) {
       console.log(socket);
       if (startingConversation) {
@@ -64,24 +69,33 @@ const Chat = ({
           case 2:
             if (!startingConversation) {
               const tempKey = calculateKey(response.y);
-              if (cryptoKey == tempKey) {
+              if (!chat.keyReceived) {
+                setChat({
+                  ...chat,
+                  keyReceived: true,
+                });
+                chat.keyReceived = true;
                 handleKeyChange(tempKey.toString().substring(0, 8));
+                socket.emit("Mensaje ASCP", {
+                  function: 3,
+                  q: 2426697107,
+                  a: 17123207,
+                  y: yValue,
+                });
               }
-              // setChat({
-              //   ...chat,
-              //   cryptoKey: tempKey.toString().substring(0, 8),
-              // });
             }
             break;
           case 3:
             if (startingConversation) {
               const tempKey = calculateKey(response.y);
-              if (cryptoKey == tempKey) {
+              console.log(chat.keyReceived);
+              if (!chat.keyReceived) {
+                setChat({
+                  ...chat,
+                  keyReceived: true,
+                });
+                chat.keyReceived = true;
                 handleKeyChange(tempKey.toString().substring(0, 8));
-                // setChat({
-                //   ...chat,
-                //   cryptoKey: tempKey.toString().substring(0, 8),
-                // });
                 socket.emit("Mensaje ASCP", {
                   function: 2,
                   q: 2426697107,
@@ -96,7 +110,7 @@ const Chat = ({
         }
       });
     }
-  }, [socket]);
+  };
 
   const handleSendOnClick = (_) => {
     const msg = chat.messageToSend;
