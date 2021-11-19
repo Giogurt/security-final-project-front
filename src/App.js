@@ -46,26 +46,11 @@ class App extends Component {
 
   diffieHellman = () => {
     const x = parseInt(this.state.xValue);
-    const y = bigInt(aValue).modPow(x, qValue).toString();
-    // let y = BigInt(BigInt(Math.pow(aValue, x)) % qValue);
+    let y = bigInt(aValue).modPow(x, qValue).toString();
+    y = parseInt(y);
     console.log("Primera y", y)
     return y;
-    // return this.powerMod(aValue, x, qValue).toString()
   };
-
-  powerMod(base, exponent, modulus) {
-    if (modulus === 1) return 0;
-    var result = 1;
-    base = base % modulus;
-    while (exponent > 0) {
-      if (exponent % 2 === 1)
-        //odd number
-        result = (result * base) % modulus;
-      exponent = exponent >> 1; //divide by 2
-      base = (base * base) % modulus;
-    }
-    return result;
-  }
 
   handleKeyChange = (newKey) => {
     this.setState({ cryptoKey: newKey });
