@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import Button from "@mui/material/Button";
 import { Container, TextField, Typography } from "@mui/material";
 import crypto from "crypto";
+import bigInt from "big-integer";
 
 const aValue = 17123207;
 const qValue = 2426697107;
@@ -72,7 +73,7 @@ const Chat = ({
             break;
           case 3:
             if (startingConversation) {
-              const tempKey = calculateKey(response.y);
+              const tempKey = calculateKey("111111111111111111111111");
               handleKeyChange(tempKey.toString().substring(0, 8));
               // setChat({
               //   ...chat,
@@ -121,16 +122,44 @@ const Chat = ({
 
     var decipher = crypto.createDecipheriv("des-ecb", key, "");
 
-    var c = decipher.update(textToDecode, "base64", "utf8");
-    c += decipher.final("utf8");
+    var c = textToDecode;
+    try {
+
+      var c = decipher.update(textToDecode, "base64", "utf8");
+      c += decipher.final("utf8");
+    } catch {
+      c = textToDecode
+    }
 
     return c;
   };
 
   const calculateKey = (y) => {
     const x = parseInt(xValue);
-    return Math.pow(y, x) % qValue;
+    // let tempY = BigInt(BigInt(Math.pow(y, x)) % qValue);
+    // console.log(tempY)
+    // return tempY;
+    const tempKey = bigInt(y).modPow(x, qValue).toString();
+    console.log("la llave", tempKey)
+    return tempKey;
+    // return Math.pow(y, x) % qValue;
+    // return powerMod(y, x, qValue).toString()
   };
+
+  const powerMod = (base, exponent, modulus) => {
+    if (modulus === 1) return 0;
+    var result = 1;
+    base = base % modulus;
+    while (exponent > 0) {
+      if (exponent % 2 === 1)
+        //odd number
+        result = (result * base) % modulus;
+      exponent = exponent >> 1; //divide by 2
+      base = (base * base) % modulus;
+    }
+    return result;
+  }
+
   return (
     <Container>
       {`My key is ${cryptoKey}`}

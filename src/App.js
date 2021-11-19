@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import Chat from "./Chat/Chat";
 import Login from "./Login/Login";
 import { io } from "socket.io-client";
+import bigInt from "big-integer";
 
 const aValue = 17123207;
 const qValue = 2426697107;
@@ -45,12 +46,30 @@ class App extends Component {
 
   diffieHellman = () => {
     const x = parseInt(this.state.xValue);
-    return Math.pow(aValue, x) % qValue;
+    const y = bigInt(aValue).modPow(x, qValue).toString();
+    // let y = BigInt(BigInt(Math.pow(aValue, x)) % qValue);
+    console.log("Primera y", y)
+    return y;
+    // return this.powerMod(aValue, x, qValue).toString()
   };
+
+  powerMod(base, exponent, modulus) {
+    if (modulus === 1) return 0;
+    var result = 1;
+    base = base % modulus;
+    while (exponent > 0) {
+      if (exponent % 2 === 1)
+        //odd number
+        result = (result * base) % modulus;
+      exponent = exponent >> 1; //divide by 2
+      base = (base * base) % modulus;
+    }
+    return result;
+  }
 
   handleKeyChange = (newKey) => {
     this.setState({ cryptoKey: newKey });
-  }
+  };
   render() {
     return (
       <div className="App">
