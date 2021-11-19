@@ -47,24 +47,31 @@ const Chat = ({
       if (startingConversation) {
         socket.emit("Mensaje ASCP", {
           function: 2,
-          q: 2426697107,
-          a: 17123207,
-          y: yValue,
+          data: {
+            q: 2426697107,
+            a: 17123207,
+            y: yValue,
+          }
         });
       } else {
         socket.emit("Mensaje ASCP", {
           function: 3,
-          q: 2426697107,
-          a: 17123207,
-          y: yValue,
+          data: {
+            q: 2426697107,
+            a: 17123207,
+            y: yValue,
+          }
         });
       }
       socket.on("Mensaje ASCP", (response) => {
         switch (response.function) {
           case 2:
             if (!startingConversation) {
-              const tempKey = calculateKey(response.y);
-              handleKeyChange(tempKey.toString().substring(0, 8));
+              const tempKey = calculateKey(response.data.y);
+              // const tempKey = "149022550";
+              if(cryptoKey == "") {
+                handleKeyChange(tempKey.toString().substring(0, 8));
+              }
               // setChat({
               //   ...chat,
               //   cryptoKey: tempKey.toString().substring(0, 8),
@@ -73,18 +80,22 @@ const Chat = ({
             break;
           case 3:
             if (startingConversation) {
-              const tempKey = calculateKey("111111111111111111111111");
-              handleKeyChange(tempKey.toString().substring(0, 8));
-              // setChat({
-              //   ...chat,
-              //   cryptoKey: tempKey.toString().substring(0, 8),
-              // });
-              socket.emit("Mensaje ASCP", {
-                function: 2,
-                q: 2426697107,
-                a: 17123207,
-                y: yValue,
-              });
+              const tempKey = calculateKey(response.data.y);
+              if (cryptoKey == "") {
+                handleKeyChange(tempKey.toString().substring(0, 8));
+                // setChat({
+                //   ...chat,
+                //   cryptoKey: tempKey.toString().substring(0, 8),
+                // });
+                socket.emit("Mensaje ASCP", {
+                  function: 2,
+                  data: {
+                    q: 2426697107,
+                    a: 17123207,
+                    y: yValue,
+                  }
+                });
+              }
             }
             break;
           default:
@@ -118,17 +129,17 @@ const Chat = ({
   };
 
   const decodeDesECB = (textToDecode, keyString) => {
+    console.log(keyString);
     var key = new Buffer(keyString.substring(0, 8), "utf8");
 
     var decipher = crypto.createDecipheriv("des-ecb", key, "");
 
     var c = textToDecode;
     try {
-
       var c = decipher.update(textToDecode, "base64", "utf8");
       c += decipher.final("utf8");
     } catch {
-      c = textToDecode
+      c = textToDecode;
     }
 
     return c;
@@ -140,7 +151,7 @@ const Chat = ({
     // console.log(tempY)
     // return tempY;
     const tempKey = bigInt(y).modPow(x, qValue).toString();
-    console.log("la llave", tempKey)
+    console.log("la llave", tempKey);
     return tempKey;
     // return Math.pow(y, x) % qValue;
     // return powerMod(y, x, qValue).toString()
@@ -158,7 +169,7 @@ const Chat = ({
       base = (base * base) % modulus;
     }
     return result;
-  }
+  };
 
   return (
     <Container>
