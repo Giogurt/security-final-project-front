@@ -47,15 +47,15 @@ const Chat = ({
       if (startingConversation) {
         socket.emit("Mensaje ASCP", {
           function: 2,
-          q: 2426697107,
-          a: 17123207,
+          q: qValue.toString(),
+          a: aValue.toString(),
           y: yValue,
         });
       } else {
         socket.emit("Mensaje ASCP", {
           function: 3,
-          q: 2426697107,
-          a: 17123207,
+          q: qValue.toString(),
+          a: aValue.toString.toString(),
           y: yValue,
         });
       }
@@ -64,7 +64,9 @@ const Chat = ({
           case 2:
             if (!startingConversation) {
               const tempKey = calculateKey(response.y);
-              handleKeyChange(tempKey.toString().substring(0, 8));
+              if (cryptoKey == tempKey) {
+                handleKeyChange(tempKey.toString().substring(0, 8));
+              }
               // setChat({
               //   ...chat,
               //   cryptoKey: tempKey.toString().substring(0, 8),
@@ -73,18 +75,20 @@ const Chat = ({
             break;
           case 3:
             if (startingConversation) {
-              const tempKey = calculateKey("111111111111111111111111");
-              handleKeyChange(tempKey.toString().substring(0, 8));
-              // setChat({
-              //   ...chat,
-              //   cryptoKey: tempKey.toString().substring(0, 8),
-              // });
-              socket.emit("Mensaje ASCP", {
-                function: 2,
-                q: 2426697107,
-                a: 17123207,
-                y: yValue,
-              });
+              const tempKey = calculateKey(response.y);
+              if (cryptoKey == tempKey) {
+                handleKeyChange(tempKey.toString().substring(0, 8));
+                // setChat({
+                //   ...chat,
+                //   cryptoKey: tempKey.toString().substring(0, 8),
+                // });
+                socket.emit("Mensaje ASCP", {
+                  function: 2,
+                  q: 2426697107,
+                  a: 17123207,
+                  y: yValue,
+                });
+              }
             }
             break;
           default:
@@ -124,11 +128,10 @@ const Chat = ({
 
     var c = textToDecode;
     try {
-
       var c = decipher.update(textToDecode, "base64", "utf8");
       c += decipher.final("utf8");
     } catch {
-      c = textToDecode
+      c = textToDecode;
     }
 
     return c;
@@ -140,7 +143,7 @@ const Chat = ({
     // console.log(tempY)
     // return tempY;
     const tempKey = bigInt(y).modPow(x, qValue).toString();
-    console.log("la llave", tempKey)
+    console.log("la llave", tempKey);
     return tempKey;
     // return Math.pow(y, x) % qValue;
     // return powerMod(y, x, qValue).toString()
@@ -158,7 +161,7 @@ const Chat = ({
       base = (base * base) % modulus;
     }
     return result;
-  }
+  };
 
   return (
     <Container>
