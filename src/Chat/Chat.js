@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import Button from "@mui/material/Button";
-import { Container, TextField, Typography } from "@mui/material";
+import { Container, Grid, TextField, Typography } from "@mui/material";
 import crypto from "crypto";
 import bigInt from "big-integer";
 
@@ -42,9 +42,9 @@ const Chat = ({
     }
   }, [cryptoKey]);
 
-  useEffect(() => {
-    listenSocket();
-  }, [socket]);
+  // useEffect(() => {
+  //   listenSocket();
+  // }, [socket]);
 
   const listenSocket = () => {
     if (socket !== undefined) {
@@ -56,7 +56,7 @@ const Chat = ({
             q: 2426697107,
             a: 17123207,
             y: yValue,
-          }
+          },
         });
       } else {
         socket.emit("Mensaje ASCP", {
@@ -65,7 +65,7 @@ const Chat = ({
             q: qValue,
             a: aValue,
             y: yValue,
-          }
+          },
         });
       }
       socket.on("Mensaje ASCP", (response) => {
@@ -86,7 +86,7 @@ const Chat = ({
                     q: qValue,
                     a: aValue,
                     y: yValue,
-                  }
+                  },
                 });
               }
             }
@@ -108,7 +108,7 @@ const Chat = ({
                     q: qValue,
                     a: aValue,
                     y: yValue,
-                  }
+                  },
                 });
               }
             }
@@ -172,6 +172,10 @@ const Chat = ({
     // return powerMod(y, x, qValue).toString()
   };
 
+  const handleSendKey = (_) => {
+    listenSocket()
+  }
+
   const powerMod = (base, exponent, modulus) => {
     if (modulus === 1) return 0;
     var result = 1;
@@ -203,6 +207,11 @@ const Chat = ({
           <Button onClick={handleSendOnClick}>Send</Button>
         </div>
       )}
+      <Grid container justifyContent="center">
+        <Grid item>
+          <Button onClick={handleSendKey} >Send Key</Button>
+        </Grid>
+      </Grid>
     </Container>
   );
 };
