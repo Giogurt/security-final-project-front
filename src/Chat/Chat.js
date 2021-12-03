@@ -32,6 +32,10 @@ const Chat = ({
       socket.on("Mensaje ASCP", (response) => {
         if (response.function === 1) {
           const message = decodeDesECB(response.data, cryptoKey);
+          const hashReceived = decodeDesECB(response.mac, cryptoKey);
+          console.log("hash received", hashReceived)
+          const hashMsg = calculateHashMessage(message);
+          console.log("calculated hash", hashMsg)
           // const message = response.data;
           console.log(message);
           if (message !== chat.lastMessage) {
@@ -120,11 +124,19 @@ const Chat = ({
     }
   };
 
+  const calculateHashMessage = (msg) => {
+    let shasum = crypto.createHash('sha1')
+    shasum.update(msg);
+    return shasum.digest('base64')
+  }
   const handleSendOnClick = (_) => {
     const msg = chat.messageToSend;
+    const hash = calculateHashMessage(msg);
+    console.log("hash before sending", hash);
+    const eHash = encodeDesECB(hash, cryptoKey)
     const eMsg = encodeDesECB(msg, cryptoKey);
     console.log("sending encrypted message", eMsg);
-    socket.emit("Mensaje ASCP", { function: 1, data: eMsg });
+    socket.emit("Mensaje ASCP", { function: 1, data: eMsg, mac: eHash });
   };
 
   const handleMessageToSendOnChange = (e) => {
@@ -175,6 +187,8 @@ const Chat = ({
   const handleSendKey = (_) => {
     listenSocket()
   }
+
+
 
   const powerMod = (base, exponent, modulus) => {
     if (modulus === 1) return 0;
