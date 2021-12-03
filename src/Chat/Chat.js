@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import Button from "@mui/material/Button";
-import { Container, Grid, TextField, Typography } from "@mui/material";
+import {
+  Checkbox,
+  Container,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import crypto from "crypto";
 import bigInt from "big-integer";
 
@@ -23,6 +31,8 @@ const Chat = ({
     messageToSend: "",
     otherYValue: 0,
     keyReceived: false,
+    interfere: false,
+    messageStatus: "",
     // cryptoKey: 0,
   });
   console.log(cryptoKey);
@@ -33,13 +43,18 @@ const Chat = ({
         if (response.function === 1) {
           const message = decodeDesECB(response.data, cryptoKey);
           const hashReceived = decodeDesECB(response.mac, cryptoKey);
-          console.log("hash received", hashReceived)
+          console.log("hash received", hashReceived);
           const hashMsg = calculateHashMessage(message);
-          console.log("calculated hash", hashMsg)
+          console.log("calculated hash", hashMsg);
           // const message = response.data;
           console.log(message);
           if (message !== chat.lastMessage) {
-            setChat({ ...chat, lastMessage: message });
+            if (hashReceived === hashMsg){
+
+              setChat({ ...chat, lastMessage: message, messageStatus: "" });
+            } else {
+              setChat({ ...chat, lastMessage: message, messageStatus: "EL MENSAJE PUEDE QUE ESTÉ COMPROMETIDO" });
+            }
           }
         }
       });
@@ -125,16 +140,22 @@ const Chat = ({
   };
 
   const calculateHashMessage = (msg) => {
-    let shasum = crypto.createHash('sha1')
+    let shasum = crypto.createHash("sha1");
     shasum.update(msg);
-    return shasum.digest('base64')
-  }
+    return shasum.digest("base64");
+  };
   const handleSendOnClick = (_) => {
-    const msg = chat.messageToSend;
+    let msg = chat.messageToSend;
     const hash = calculateHashMessage(msg);
+
+    if (chat.interfere) {
+      msg = "NUNCA TE AMÉ";
+    }
+
     console.log("hash before sending", hash);
-    const eHash = encodeDesECB(hash, cryptoKey)
-    const eMsg = encodeDesECB(msg, cryptoKey);
+    const eHash = encodeDesECB(hash, cryptoKey);
+    let eMsg = encodeDesECB(msg, cryptoKey);
+
     console.log("sending encrypted message", eMsg);
     socket.emit("Mensaje ASCP", { function: 1, data: eMsg, mac: eHash });
   };
@@ -185,10 +206,12 @@ const Chat = ({
   };
 
   const handleSendKey = (_) => {
-    listenSocket()
-  }
+    listenSocket();
+  };
 
-
+  const handleChecked = (event) => {
+    setChat({...chat, interfere: event.target.checked });
+  };
 
   const powerMod = (base, exponent, modulus) => {
     if (modulus === 1) return 0;
@@ -210,20 +233,37 @@ const Chat = ({
       {cryptoKey === "" ? (
         <div>Waiting for the other key</div>
       ) : (
-        <div>
-          <Typography variant="h5"> {chat.lastMessage} </Typography>
-          <TextField
-            name="chat"
-            value={chat.messageToSend}
-            variant="outlined"
-            onChange={handleMessageToSendOnChange}
-          />
-          <Button onClick={handleSendOnClick}>Send</Button>
-        </div>
+        <Grid container justifyContent="center">
+          <Grid item xs={12} >
+            <h2 >{chat.messageStatus}</h2>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h5"> {chat.lastMessage} </Typography>
+          </Grid>
+          <Grid item container justifyContent="flex-end" xs={6}>
+            <TextField
+              name="chat"
+              value={chat.messageToSend}
+              variant="outlined"
+              onChange={handleMessageToSendOnChange}
+            />
+          </Grid>
+          <Grid item container justifyContent="flex-start" xs={6}>
+            <Button onClick={handleSendOnClick}>Send</Button>
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox checked={chat.interfere} onChange={handleChecked} />
+              }
+              label="Interfere with the communication"
+            />
+          </Grid>
+        </Grid>
       )}
       <Grid container justifyContent="center">
         <Grid item>
-          <Button onClick={handleSendKey} >Send Key</Button>
+          <Button onClick={handleSendKey}>Send Key</Button>
         </Grid>
       </Grid>
     </Container>
